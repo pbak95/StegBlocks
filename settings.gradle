@@ -1,0 +1,4 @@
+rootProject.name = 'StegBlocks-Parent'
+include 'StegBlocks-Client'
+include 'StegBlocks-Server'
+
