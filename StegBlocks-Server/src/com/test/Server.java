@@ -13,7 +13,7 @@ import java.net.InetSocketAddress;
         import com.sun.nio.sctp.MessageInfo;
         import com.sun.nio.sctp.SctpChannel;
         import com.sun.nio.sctp.SctpServerChannel;
-import jdk.internal.util.xml.impl.Input;
+import com.sun.nio.sctp.SctpSocketOption;
 
 public class Server {
     static int SERVER_PORT = 3456;
@@ -43,7 +43,7 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-        File antygona = new File("/home/michal/Desktop/antygona.txt");
+        File antygona = new File("D:\\BOT\\THUG\\logs\\BEST\\antygona.txt");
         filebuf = ByteBuffer.allocateDirect((int)antygona.length());
         InputStream is = new FileInputStream(antygona);
         for(int i=0;i<(int)antygona.length();i++) {

@@ -101,16 +101,14 @@ public class Client {
         }
     }
 
-    static class AssociationHandler
-            extends AbstractNotificationHandler
-    {
+    static class AssociationHandler extends AbstractNotificationHandler {
         public HandlerResult handleNotification(AssociationChangeNotification not,
                                                 PrintStream stream) {
             if (not.event().equals(COMM_UP)) {
                 int outbound = not.association().maxOutboundStreams();
                 int inbound = not.association().maxInboundStreams();
-                stream.printf("New association setup with %d outbound streams" +
-                        ", and %d inbound streams.\n", outbound, inbound);
+//                stream.printf("New association setup with %d outbound streams" +
+//                        ", and %d inbound streams.\n", outbound, inbound);
             }
 
             return HandlerResult.CONTINUE;
@@ -118,7 +116,7 @@ public class Client {
 
         public HandlerResult handleNotification(ShutdownNotification not,
                                                 PrintStream stream) {
-            stream.printf("The association has been shutdown.\n");
+            //stream.printf("The association has been shutdown.\n");
             return HandlerResult.RETURN;
         }
     }
