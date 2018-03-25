@@ -9,7 +9,7 @@ import java.util.*;
  */
 public class Client_TCP implements Runnable {
 
-    private static String TMP_PATH = "D:\\studia\\BEST\\projekt\\StegBlocks\\test-new.txt";
+    private static String TMP_PATH = "antygona-new.txt";
     private static int SERVER_PORT = 34562;
     private static String HOST = "localhost";
     private static final int CONNECTIONS_NUMBER = 4;
@@ -18,7 +18,6 @@ public class Client_TCP implements Runnable {
     private static final int END_MSG_CONN = 3;
 
     private static volatile int CHARACTER_COUNTER = 0;
-
 
     private File file;
     private FileOutputStream fileOutputStream;

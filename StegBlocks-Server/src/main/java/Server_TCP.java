@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class Server_TCP implements Runnable {
 
-    private static String TMP_PATH = "D:\\studia\\BEST\\projekt\\StegBlocks\\test.txt";
+    private static String TMP_PATH = "antygona.txt";
     private static int CONNECTION_COUNTER = 0;
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
