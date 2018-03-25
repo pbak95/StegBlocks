@@ -2,9 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Patryk on 21.03.2018.
@@ -16,6 +14,10 @@ public class Client_TCP implements Runnable {
     private static String HOST = "localhost";
     private static final int CONNECTIONS_NUMBER = 4;
     private static DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final int START_MSG_CONN = 0;
+    private static final int END_MSG_CONN = 3;
+
+    private static volatile int CHARACTER_COUNTER = 0;
 
 
     private File file;
@@ -23,9 +25,12 @@ public class Client_TCP implements Runnable {
     private Map<Integer, Socket> connectionsPool;
     private Map<Socket, BufferedReader> inputStreams;
 
+    public List<Integer> characterList;
+
     public Client_TCP() {
         connectionsPool = new LinkedHashMap<>();
         inputStreams = new HashMap<>();
+        characterList = new LinkedList<>();
         run();
     }
 
@@ -35,7 +40,11 @@ public class Client_TCP implements Runnable {
             initialiseConnectionsPool();
             connectionsPool.forEach((connectionNumber, connection) ->
                     new Thread(() -> {
-                readDataFromServer(connectionNumber, inputStreams.get(connection));
+                        try {
+                            readDataFromServer(connectionNumber, inputStreams.get(connection));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }).start()
             );
         } catch (FileNotFoundException e) {
@@ -43,27 +52,48 @@ public class Client_TCP implements Runnable {
         }
     }
 
-    public void readDataFromServer(int connectionNumber, BufferedReader bufferedReader) {
+    public void readDataFromServer(int connectionNumber, BufferedReader bufferedReader) throws IOException {
         logMessage("Hello from connection " + connectionNumber);
         while (true) {
-            try {
                 String message = bufferedReader.readLine();
                 if (message != null) {
-                    if (message.equals("END")) {
-                        transmissionFinished();
+                    if (message.trim().equals("[0] END")) {
+                        System.out.println("Received characters: ");
+                        characterList.forEach(System.out::println);
+//                        characterList.forEach(counter -> {
+//                            try {
+//                                writeToFile((char) ((int)counter));
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
+//                        });
+                        break;
                     } else {
-                        writeToFile(connectionNumber + message + "%n");
+                        switch (connectionNumber) {
+                            case START_MSG_CONN:
+                                CHARACTER_COUNTER = 0;
+                                break;
+                            case END_MSG_CONN:
+                                characterList.add(CHARACTER_COUNTER);
+                                try {
+                                    writeToFile((char) ((int)CHARACTER_COUNTER));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                break;
+                            default:
+                                CHARACTER_COUNTER++;
+                                break;
+                        }
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
+        finishTransmission();
+        fileOutputStream.close();
     }
 
-    private synchronized void writeToFile(String text) throws IOException {
-        fileOutputStream.write(text.getBytes());
-        logMessage("Message wrote to file: " + text);
+    private synchronized void writeToFile(char character) throws IOException {
+        fileOutputStream.write(character);
     }
 
     private void initialiseFile() throws FileNotFoundException {
@@ -87,7 +117,7 @@ public class Client_TCP implements Runnable {
         }
     }
 
-    private void transmissionFinished() {
+    private void finishTransmission() throws IOException {
         inputStreams.forEach(((socket, bufferedReader) -> {
             try {
                 bufferedReader.close();
