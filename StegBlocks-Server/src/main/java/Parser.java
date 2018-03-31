@@ -9,50 +9,51 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public class Parser {
+	//on client side map the same, but withour polish signes on end
 	static Map<Integer, Integer> codingMap = new HashMap<Integer, Integer>();
     static String sentence="";
     
     private static void setup() {
-    	codingMap.put(0, 32);//space
+    	codingMap.put(32,0);//space
     	codingMap.put(1, 1);//a
-    	codingMap.put(2, 5); //e
-    	codingMap.put(3, 15);//o
-    	codingMap.put(4, 9);//i
-    	codingMap.put(5, 26);//z
-    	codingMap.put(6, 14);//n
-    	codingMap.put(7, 19);//s
-    	codingMap.put(8, 18);//r
-    	codingMap.put(9, 23);//w
-    	codingMap.put(10, 3);//c
-    	codingMap.put(11, 20);//t
+    	codingMap.put(5,2); //e
+    	codingMap.put(15,3);//o
+    	codingMap.put(9,4);//i
+    	codingMap.put(26,5);//z
+    	codingMap.put(14,6);//n
+    	codingMap.put(19,7);//s
+    	codingMap.put(18,8);//r
+    	codingMap.put(23,9);//w
+    	codingMap.put(3,10);//c
+    	codingMap.put(20,11);//t
     	codingMap.put(12, 12);//l
-    	codingMap.put(13, 25);//y
-    	codingMap.put(14, 11);//k
-    	codingMap.put(15, 4);//d
-    	codingMap.put(16, 16);//p
-    	codingMap.put(17, 13);//m
-    	codingMap.put(18, 21);//u
-    	codingMap.put(19, 10);//j
-    	codingMap.put(20, 2);//b
-    	codingMap.put(21, 7);//g
-    	codingMap.put(22, 8);//h
-    	codingMap.put(23, 6);//f
-    	codingMap.put(24, 16);//q
-    	codingMap.put(25, 24);//x
-    	codingMap.put(26, 22);//v
-    	codingMap.put(27, 44);//,
-    	codingMap.put(28, 46);//.
-    	codingMap.put(29, 63);//!
-    	codingMap.put(30, 33);//?
-    	codingMap.put(31, 261);//ą
-    	codingMap.put(32, 263);//ć
-    	codingMap.put(33, 281);//ę
-    	codingMap.put(34, 322);//ł
-    	codingMap.put(35, 243);//ó
-    	codingMap.put(36, 324);//ń
-    	codingMap.put(37, 347);//ś
-    	codingMap.put(38, 380);//ż
-    	codingMap.put(39, 378);//ż
+    	codingMap.put(25,13);//y
+    	codingMap.put(11,14);//k
+    	codingMap.put(4,15);//d
+    	codingMap.put(16,16);//p
+    	codingMap.put(13,17);//m
+    	codingMap.put(21,18);//u
+    	codingMap.put(10,19);//j
+    	codingMap.put(2,20);//b
+    	codingMap.put(7,21);//g
+    	codingMap.put(8,22);//h
+    	codingMap.put(6,23);//f
+    	codingMap.put(16,24);//q
+    	codingMap.put(24,25);//x
+    	codingMap.put(22,26);//v
+    	codingMap.put(44,27);//,
+    	codingMap.put(46,28);//.
+    	codingMap.put(63,29);//!
+    	codingMap.put(33,30);//?
+    	codingMap.put(261,1);//ą
+    	codingMap.put(263,10);//ć
+    	codingMap.put(281,2);//ę
+    	codingMap.put(322,12);//ł
+    	codingMap.put(243,3);//ó
+    	codingMap.put(324,6);//ń
+    	codingMap.put(347,7);//ś
+    	codingMap.put(380,5);//ż
+    	codingMap.put(378,5);//ż
 	}
     
     public static void main(String[] args) throws IOException {
@@ -173,26 +174,35 @@ public class Parser {
 	}
     
 	private static int codeChar(int temp) {
-    	for (Entry<Integer, Integer> entry : codingMap.entrySet())
-    	{
-    	    if(entry.getValue() == temp) {
-    	    	return entry.getKey();
-    	    }
-    	}
-    	return temp;
+		int ret = temp;
+		try {
+			ret = codingMap.get(temp);
+			return ret;
+		}
+		catch(Exception ex){
+			if(temp > 127) {
+				return 0;
+			}
+			else {
+				return temp;
+			}
+		}
 	}
 	
     //TO REMOVE and add on client side
-	private static int decodeChar(int temp) {
-        //kodowanie liter
-        if(temp>=1 && temp <=26) {
-        	temp = codingMap.get(temp)+96;
-        }
-        //kodowanie przecinka,kropki,wykrzyknika i pytajnika
-        else if(temp < 40) {
-        	temp = codingMap.get(temp);
-        }
-    	return temp;
+	private static int decodeChar(int temp) {      
+    	for (Entry<Integer, Integer> entry : codingMap.entrySet())
+    	{
+    	    if(entry.getValue() == temp) {
+    	    	if(temp>=1 && temp <=26) {
+    	        	return entry.getKey()+96;
+    	        }
+    	    	else {
+    	    		return entry.getKey();	
+    	    	}
+    	    }
+    	}
+		return temp;
 	}
 	
 	public static byte[] readBytes(File file) {
