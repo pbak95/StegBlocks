@@ -144,24 +144,7 @@ public class Parser {
         System.out.println("Tyle znakow po ostateczenej kompresji: "+temp3);
 
         saveToFile(byteArray);
-        
-        //TO REMOVE and add on client side
-        String m = decode();
-        System.out.println("After decoding: Length: "+m.length()+" Text: "+m.substring(0, 200));
     }
-	
-    //TO REMOVE and add on client side
-    private static String decode() throws IOException {
-		String message = "";
-		FileInputStream fis = new FileInputStream("antygona-encoded.txt");
-        InputStreamReader fr = new InputStreamReader(fis);
-        BufferedReader br = new BufferedReader(fr);
-        int sz = -1;
-        while((sz=br.read())!=-1){
-        	message = message.concat(Character.toString((char) decodeChar(sz)));
-        }
-		return message;
-	}
     
 	private static void saveToFile(ArrayList<Byte> byteArray) throws IOException {
         FileOutputStream outputStream = new FileOutputStream("antygona-encoded.txt");
@@ -188,23 +171,7 @@ public class Parser {
 			}
 		}
 	}
-	
-    //TO REMOVE and add on client side
-	private static int decodeChar(int temp) {      
-    	for (Entry<Integer, Integer> entry : codingMap.entrySet())
-    	{
-    	    if(entry.getValue() == temp) {
-    	    	if(temp>=1 && temp <=26) {
-    	        	return entry.getKey()+96;
-    	        }
-    	    	else {
-    	    		return entry.getKey();	
-    	    	}
-    	    }
-    	}
-		return temp;
-	}
-	
+
 	public static byte[] readBytes(File file) {
         FileInputStream fis = null;
         byte[] b = null;

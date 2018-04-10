@@ -42,7 +42,7 @@ public class Client_TCP implements Runnable {
                         try {
                             readDataFromServer(connectionNumber, inputStreams.get(connection));
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            System.out.println(e.getMessage());
                         }
                     }).start()
             );
@@ -57,15 +57,8 @@ public class Client_TCP implements Runnable {
                 String message = bufferedReader.readLine();
                 if (message != null) {
                     if (message.trim().equals("END")) {
-                        System.out.println("Received characters: ");
-                        characterList.forEach(System.out::println);
-//                        characterList.forEach(counter -> {
-//                            try {
-//                                writeToFile((char) ((int)counter));
-//                            } catch (IOException e) {
-//                                e.printStackTrace();
-//                            }
-//                        });
+                        System.out.println("End");
+                        Parser parser = new Parser(TMP_PATH);
                         break;
                     } else {
                         switch (connectionNumber) {
