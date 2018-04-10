@@ -106,8 +106,10 @@ public class Server_TCP implements Runnable {
            stream = streams.get(socket);
         }
         try {
-            Thread.sleep((int)(1 + ( Math.random() * 10))); //ugly but works, small delay to overpass delays in channel
-            stream.println("[" + connectionNumber + "] " + date);
+            if(encoding) {
+                Thread.sleep((int) (1 + (Math.random() * 10))); //ugly but works, small delay to overpass delays in channel
+            }
+            stream.println(date);
             logMessage("Sent: " + "[" + connectionNumber + "] " + date);
         } catch (InterruptedException e) {
             e.printStackTrace();

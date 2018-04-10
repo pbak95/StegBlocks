@@ -56,7 +56,7 @@ public class Client_TCP implements Runnable {
         while (true) {
                 String message = bufferedReader.readLine();
                 if (message != null) {
-                    if (message.trim().equals("[0] END")) {
+                    if (message.trim().equals("END")) {
                         System.out.println("Received characters: ");
                         characterList.forEach(System.out::println);
 //                        characterList.forEach(counter -> {
