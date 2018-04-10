@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Patryk on 21.03.2018.
@@ -17,7 +19,7 @@ public class Server_TCP implements Runnable {
     private static int CONNECTION_COUNTER = 0;
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
-    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final int CONNECTIONS_NUMBER = 4;
 
     private int SERVER_PORT = 34562;
@@ -25,14 +27,18 @@ public class Server_TCP implements Runnable {
     private ByteBuffer filebuf;
     private Map<Integer, Socket> connections;
     private Map<Socket, PrintStream> streams;
+    private Timer timer;
 
-    public Server_TCP() {
+    private boolean encoding = false;
+
+    public Server_TCP(boolean flag) {
         try {
+            timer = new Timer();
+            encoding = flag;
             serverSocket = new ServerSocket(SERVER_PORT);
             connections = new HashMap();
             streams = new HashMap<>();
             Parser parser = new Parser(FILE_BEFORE);
-
             readFile(FILE_AFTER); //in future pass param from console through constructor to this method
             run();
         } catch (IOException e) {
@@ -49,15 +55,30 @@ public class Server_TCP implements Runnable {
                 connections.put(CONNECTION_COUNTER++, client);
                 filebuf.rewind();
                 if (connections.size() == CONNECTIONS_NUMBER) {
-                    logMessage("Start encoding");
-                    while(filebuf.hasRemaining()) {
-                        int sequence = filebuf.get();
-                        logMessage("Encoding: "+ sequence);
-                        sendDate(LocalDateTime.now().format(format), sequence);
+                    logMessage("Start" + encoding);
+                    if(encoding) {
+                        while (filebuf.hasRemaining()) {
+                            int sequence = filebuf.get();
+                            logMessage("Encoding: " + sequence);
+                            sendDate(LocalDateTime.now().format(format), sequence);
+                        }
+                        sendDate("END", START_MSG_CONN);
+                        finishTransmission();
+                        CONNECTION_COUNTER = 0;
                     }
-                    sendDate("END", START_MSG_CONN);
-                    finishTransmission();
-                    CONNECTION_COUNTER = 0;
+                    else {
+                        //sending every 10ms current date
+                        timer.schedule( new TimerTask()
+                        {
+                            public void run() {
+                                try {
+                                    sendDate(LocalDateTime.now().format(format), 0);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }, 0, 10);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -120,6 +141,11 @@ public class Server_TCP implements Runnable {
     }
 
     public static void main(String[] args) {
-        new Server_TCP();
+        if(args[0].equals("true")) {
+            new Server_TCP(true);
+        }
+        else {
+            new Server_TCP(false);
+        }
     }
 }

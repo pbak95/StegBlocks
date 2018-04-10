@@ -13,7 +13,7 @@ public class Client_TCP implements Runnable {
     private static int SERVER_PORT = 34562;
     private static String HOST = "localhost";
     private static final int CONNECTIONS_NUMBER = 4;
-    private static DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
 
