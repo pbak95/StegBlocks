@@ -12,7 +12,8 @@ import java.util.Map;
  */
 public class Server_TCP implements Runnable {
 
-    private static String TMP_PATH = "antygona.txt";
+    private static String FILE_BEFORE = "antygona.txt";
+    private static String FILE_AFTER = "antygona-encoded.txt";
     private static int CONNECTION_COUNTER = 0;
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
@@ -30,7 +31,9 @@ public class Server_TCP implements Runnable {
             serverSocket = new ServerSocket(SERVER_PORT);
             connections = new HashMap();
             streams = new HashMap<>();
-            readFile(TMP_PATH); //in future pass param from console through constructor to this method
+            Parser parser = new Parser(FILE_BEFORE);
+
+            readFile(FILE_AFTER); //in future pass param from console through constructor to this method
             run();
         } catch (IOException e) {
             e.printStackTrace();

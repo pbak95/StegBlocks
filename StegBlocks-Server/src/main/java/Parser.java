@@ -55,10 +55,10 @@ public class Parser {
     	codingMap.put(380,5);//ż
     	codingMap.put(378,5);//ż
 	}
-    
-    public static void main(String[] args) throws IOException {
+
+    public Parser(String file) throws IOException {
     	setup();
-        FileInputStream fis = new FileInputStream("antygona.txt");
+        FileInputStream fis = new FileInputStream(file);
         InputStreamReader fr = new InputStreamReader(fis, "Cp1250");
         BufferedReader br = new BufferedReader(fr);
         String sz = null;
