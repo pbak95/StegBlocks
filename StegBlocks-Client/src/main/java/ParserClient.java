@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors.*;
@@ -8,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class Parser {
+public class ParserClient {
     //on client side map the same, but withour polish signes on end
     static Map<Integer, Integer> codingMap = new HashMap<Integer, Integer>();
     static String sentence="";
@@ -47,7 +49,7 @@ public class Parser {
         codingMap.put(33,30);//?
     }
 
-    public Parser(String file) throws IOException {
+    public ParserClient(String file) throws IOException {
         setup();
         String m = decode(file);
         System.out.println("After decoding: Length: "+m.length()+" Text: "+m);

@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,8 +21,9 @@ public class Server_TCP implements Runnable {
     private static int CONNECTION_COUNTER = 0;
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
+    private static final int END_SEQUENCE = -1;
     private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-    private static final int CONNECTIONS_NUMBER = 4;
+    private static final int CONNECTIONS_NUMBER = 8;
 
     private int SERVER_PORT = 34562;
     private ServerSocket serverSocket;
@@ -38,7 +41,7 @@ public class Server_TCP implements Runnable {
             serverSocket = new ServerSocket(SERVER_PORT);
             connections = new HashMap();
             streams = new HashMap<>();
-            Parser parser = new Parser(FILE_BEFORE);
+            ParserServer parserServer = new ParserServer(FILE_BEFORE);
             readFile(FILE_AFTER); //in future pass param from console through constructor to this method
             run();
         } catch (IOException e) {
@@ -60,9 +63,9 @@ public class Server_TCP implements Runnable {
                         while (filebuf.hasRemaining()) {
                             int sequence = filebuf.get();
                             logMessage("Encoding: " + sequence);
-                            sendDate(LocalDateTime.now().format(format), sequence);
+                            sendDate(sequence);
                         }
-                        sendDate("END", START_MSG_CONN);
+                        sendDate(END_SEQUENCE);
                         finishTransmission();
                         CONNECTION_COUNTER = 0;
                     }
@@ -72,7 +75,7 @@ public class Server_TCP implements Runnable {
                         {
                             public void run() {
                                 try {
-                                    sendDate(LocalDateTime.now().format(format), 0);
+                                    sendDate(0);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -86,15 +89,19 @@ public class Server_TCP implements Runnable {
         }
     }
 
-    private void sendDate(String date, int sequence) throws IOException {
+    private void sendDate(int sequence) throws IOException {
         //send first token
-        sendStream(connections.get(START_MSG_CONN),date,START_MSG_CONN);
-        for(int i=0; i < sequence; i++) {
-            int streamno = (int) (1 + (Math.random() * (CONNECTIONS_NUMBER - 2))); //-2 because start and end token
-            sendStream(connections.get(streamno), date, streamno);
+        sendStream(connections.get(START_MSG_CONN),LocalDateTime.now().format(format),START_MSG_CONN);
+        if (sequence == END_SEQUENCE) {
+            sendStream(connections.get(START_MSG_CONN), "END", START_MSG_CONN);
+        } else {
+            for(int i=0; i < sequence; i++) {
+                int streamno = (int) (1 + (Math.random() * (CONNECTIONS_NUMBER - 2))); //-2 because start and end token
+                sendStream(connections.get(streamno), LocalDateTime.now().format(format), streamno);
+            }
         }
         //send end token
-        sendStream(connections.get(END_MSG_CONN),date,END_MSG_CONN);
+        sendStream(connections.get(END_MSG_CONN),LocalDateTime.now().format(format),END_MSG_CONN);
     }
 
     private void sendStream(Socket socket, String date, int connectionNumber) throws IOException {
@@ -127,6 +134,7 @@ public class Server_TCP implements Runnable {
     }
 
     private void readFile(String path) throws IOException {
+        System.out.println(path);
         File file = new File(path);
         filebuf = ByteBuffer.allocateDirect((int)file.length());
         InputStream is = new FileInputStream(file);

@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.*;
 import java.net.Socket;
 import java.time.LocalDateTime;
@@ -12,7 +14,7 @@ public class Client_TCP implements Runnable {
     private static String TMP_PATH = "antygona-new.txt";
     private static int SERVER_PORT = 34562;
     private static String HOST = "localhost";
-    private static final int CONNECTIONS_NUMBER = 4;
+    private static final int CONNECTIONS_NUMBER = 8;
     private static DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
@@ -58,7 +60,7 @@ public class Client_TCP implements Runnable {
                 if (message != null) {
                     if (message.trim().equals("END")) {
                         System.out.println("End");
-                        Parser parser = new Parser(TMP_PATH);
+                        ParserClient parserClient = new ParserClient(TMP_PATH);
                         break;
                     } else {
                         switch (connectionNumber) {
@@ -67,6 +69,8 @@ public class Client_TCP implements Runnable {
                                 break;
                             case END_MSG_CONN:
                                 characterList.add(CHARACTER_COUNTER);
+//                                logMessage("Connection " + connectionNumber +
+//                                        ", new character: " + CHARACTER_COUNTER);
                                 try {
                                     writeToFile((char) ((int)CHARACTER_COUNTER));
                                 } catch (IOException e) {

@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors.*;
@@ -8,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class Parser {
+public class ParserServer {
 	//on client side map the same, but withour polish signes on end
 	static Map<Integer, Integer> codingMap = new HashMap<Integer, Integer>();
     static String sentence="";
@@ -56,7 +58,7 @@ public class Parser {
     	codingMap.put(378,5);//ż
 	}
 
-    public Parser(String file) throws IOException {
+    public ParserServer(String file) throws IOException {
     	setup();
         FileInputStream fis = new FileInputStream(file);
         InputStreamReader fr = new InputStreamReader(fis, "Cp1250");
