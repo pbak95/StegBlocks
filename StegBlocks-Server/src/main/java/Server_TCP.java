@@ -1,4 +1,3 @@
-package main.java;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -16,8 +15,8 @@ import java.util.TimerTask;
  */
 public class Server_TCP implements Runnable {
 
-    private static String FILE_BEFORE = "antygona.txt";
-    private static String FILE_AFTER = "antygona-encoded.txt";
+    private static final String FILE_BEFORE = "/home/osboxes/Studia/BEST/projekt/StegBlocks/antygona.txt";
+    private static final String FILE_AFTER = "/home/osboxes/Studia/BEST/projekt/StegBlocks/antygona-encoded.txt";
     private static int CONNECTION_COUNTER = 0;
     private static final int START_MSG_CONN = 0;
     private static final int END_MSG_CONN = 3;
@@ -25,7 +24,7 @@ public class Server_TCP implements Runnable {
     private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final int CONNECTIONS_NUMBER = 8;
 
-    private int SERVER_PORT = 34562;
+    private int SERVER_PORT = 40000;
     private ServerSocket serverSocket;
     private ByteBuffer filebuf;
     private Map<Integer, Socket> connections;

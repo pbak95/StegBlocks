@@ -1,13 +1,7 @@
-
 import java.io.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors.*;
-import java.util.stream.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ParserServer {
 	//on client side map the same, but withour polish signes on end
@@ -57,9 +51,9 @@ public class ParserServer {
     	codingMap.put(378,5);//ż
 	}
 
-    public ParserServer(String file) throws IOException {
+    public ParserServer(String fileBefore, String fileAfter) throws IOException {
     	setup();
-        FileInputStream fis = new FileInputStream(file);
+        FileInputStream fis = new FileInputStream(fileBefore);
         InputStreamReader fr = new InputStreamReader(fis, "Cp1250");
         BufferedReader br = new BufferedReader(fr);
         String sz = null;
@@ -116,10 +110,10 @@ public class ParserServer {
 //        }
 //            
 //        System.out.println("Tyle \"waza\" "+counter+" most common slowa: "+(counter2));
-        reaarrangeFile();
+        reaarrangeFile(fileAfter);
     }
     
-	private static void reaarrangeFile() throws IOException {
+	private static void reaarrangeFile(String path) throws IOException {
         ArrayList<Byte> byteArray = new ArrayList();
         for(int i=0;i<sentence.length();i++) {
             int temp = sentence.charAt(i);
@@ -144,11 +138,11 @@ public class ParserServer {
         }
         System.out.println("Tyle znakow po ostateczenej kompresji: "+temp3);
 
-        saveToFile(byteArray);
+        saveToFile(byteArray, path);
     }
     
-	private static void saveToFile(ArrayList<Byte> byteArray) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream("antygona-encoded.txt");
+	private static void saveToFile(ArrayList<Byte> byteArray, String path) throws IOException {
+        FileOutputStream outputStream = new FileOutputStream(path);
         byte[] strToBytes = new byte[byteArray.size()];
         for (int i = 0; i < byteArray.size(); i++) {
             strToBytes[i] = byteArray.get(i);

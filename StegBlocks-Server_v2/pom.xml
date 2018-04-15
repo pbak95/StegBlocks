@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>BEST_StegBlocks</groupId>
-    <artifactId>StegBlocks-Client_v2</artifactId>
+    <artifactId>StegBlocks-Server_v2</artifactId>
     <version>1.0-SNAPSHOT</version>
     <build>
         <plugins>
@@ -20,7 +20,6 @@
         </plugins>
     </build>
 
-
     <repositories>
         <repository>
             <id>clojars</id>
@@ -30,10 +29,16 @@
 
     <dependencies>
         <dependency>
-        <groupId>jnetpcap</groupId>
-        <artifactId>jnetpcap</artifactId>
-        <version>1.4.r1425-1d</version>
+            <groupId>jnetpcap</groupId>
+            <artifactId>jnetpcap</artifactId>
+            <version>1.4.r1425-1d</version>
+        </dependency>
+        <dependency>
+            <groupId>jnetpcap</groupId>
+            <artifactId>jnetpcap</artifactId>
+            <version>1.4.r1425-1d</version>
         </dependency>
     </dependencies>
-    
+
+
 </project>
