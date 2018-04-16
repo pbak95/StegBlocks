@@ -18,16 +18,17 @@ import java.util.*;
 
 public class Server_TCP_v2 implements Runnable {
 
-    private static String TMP_PATH = "/home/osboxes/Studia/BEST/projekt/StegBlocks/test-new.txt";
-    private static final int PORTS_NUMBER = 9;
-    private static final int START_PORT = 40000;    //could be changed later to spread ports across free space
-    private static final int END_PORT = 40007;    //could be changed later to spread ports across free space
-    private static final int FINISH_PORT = 4008;    //could be changed later to spread ports across free space
+    private static String PATH = "/home/michal/Desktop/BEST/StegBlocks/test-new.txt";
+    private static final int PORTS_NUMBER = 10;
+    private static final int START_PORT = 122;    //could be changed later to spread ports across free space
+    private static final int END_PORT = 150;    //could be changed later to spread ports across free space
+    private static final int FINISH_PORT = 68;    //could be changed later to spread ports across free space
     private static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final String FILTER = "host 10.0.2.15"; //port filter doesn't work, so I filter by host
 
     private static volatile int CHARACTER_COUNTER = 0;
     public List<Integer> characterList;
+    private static ArrayList<Integer> portmap;
 
     private Map<Integer, ServerSocket> connectionsPool;
     private List<PcapIf> alldevs; // Will be filled with NICs
@@ -74,9 +75,20 @@ public class Server_TCP_v2 implements Runnable {
     }
 
     private void initalizePorts() throws IOException {
-        for (int i = 0; i < PORTS_NUMBER; i++) {
-            connectionsPool.put(i, new ServerSocket(START_PORT + i));
-        }
+//        for (int i = 0; i < PORTS_NUMBER; i++) {
+//            connectionsPool.put(i, new ServerSocket(START_PORT + i));
+//        }
+        portmap = new ArrayList<>();
+        portmap.add(54);
+        portmap.add(60);
+        portmap.add(85);
+        portmap.add(74);
+        portmap.add(98);
+        portmap.add(82);
+        portmap.add(107);
+        portmap.add(75);
+        portmap.add(77);
+        portmap.add(55);
     }
 
     private void initializeSniffer() {
@@ -162,12 +174,13 @@ public class Server_TCP_v2 implements Runnable {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    } else if (tcp.destination() > START_PORT && tcp.destination() < END_PORT) {
+                    } else if (portmap.contains(tcp.destination())) {
                         CHARACTER_COUNTER++;
                     } else if (tcp.destination() == FINISH_PORT) {
                         try {
                             //Thread.sleep(2000); //wait some time and receive
                             finishTransmission();
+                            main.java.ParserClient parserServer = new main.java.ParserClient(PATH);
                         }
 //                        catch (InterruptedException e) {
 //                            e.printStackTrace();
@@ -182,7 +195,7 @@ public class Server_TCP_v2 implements Runnable {
     }
 
     private void initialiseFile() throws FileNotFoundException {
-        file = new File(TMP_PATH);
+        file = new File(PATH);
         fileOutputStream = new FileOutputStream(file);
     }
 

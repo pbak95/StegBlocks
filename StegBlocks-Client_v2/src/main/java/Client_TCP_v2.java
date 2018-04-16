@@ -21,13 +21,14 @@ import java.util.TimerTask;
 
 public class Client_TCP_v2 implements Runnable {
 
-    private static final String FILE_BEFORE = "/home/osboxes/Studia/BEST/projekt/StegBlocks/test.txt";
-    private static final String FILE_AFTER = "/home/osboxes/Studia/BEST/projekt/StegBlocks/test-encoded.txt";
-    private static final int START_PORT = 40000;    //could be changed later to spread ports across free space
-    private static final int END_PORT = 40007;    //could be changed later to spread ports across free space
-    private static final int CONNECTIONS_NUMBER = 6; //number of ports used to transmit characters
-    private static final int FINISH_PORT = 4008;    //could be changed later to spread ports across free space
+    private static final String FILE_BEFORE = "/home/michal/Desktop/BEST/StegBlocks/test.txt";
+    private static final String FILE_AFTER = "/home/michal/Desktop/BEST/StegBlocks/test-encoded.txt";
+    private static final int START_PORT = 122;    //could be changed later to spread ports across free space
+    private static final int END_PORT = 150;    //could be changed later to spread ports across free space
+    private static final int CONNECTIONS_NUMBER = 10; //number of ports used to transmit characters
+    private static final int FINISH_PORT = 68;    //could be changed later to spread ports across free space
     private static final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static ArrayList<Integer> portmap;
 
     private static final String HOST = "10.0.2.15";
 
@@ -51,6 +52,7 @@ public class Client_TCP_v2 implements Runnable {
     @Override
     public void run() {
         try {
+            initPorts();
             initializeFile();
             initializeSniffer();
             initializeHandler();
@@ -65,13 +67,27 @@ public class Client_TCP_v2 implements Runnable {
 
     }
 
+    private void initPorts() {
+        portmap = new ArrayList<>();
+        portmap.add(54);
+        portmap.add(60);
+        portmap.add(85);
+        portmap.add(74);
+        portmap.add(98);
+        portmap.add(82);
+        portmap.add(107);
+        portmap.add(75);
+        portmap.add(77);
+        portmap.add(55);
+    }
+
     private void sendFile() throws UnknownHostException {
         logMessage("Start file transmission");
         filebuf.rewind();
         while (filebuf.hasRemaining()) {
             int sequence = filebuf.get();
             logMessage("Encoding: " + sequence);
-            pcap.loop(sequence + 2, jpacketHandler, "jNetPcap rocks!"); //character number + 2(start and end sequence)
+            //pcap.loop(sequence + 2, jpacketHandler, "jNetPcap rocks!"); //character number + 2(start and end sequence)
             sendCharacter(sequence);
         }
         endTransmission();
@@ -106,7 +122,8 @@ public class Client_TCP_v2 implements Runnable {
     }
 
     private int getPseudorandomPort() {
-        return START_PORT + (int) (1 + (Math.random() * (CONNECTIONS_NUMBER)));
+        int temp = (int) (Math.random() * CONNECTIONS_NUMBER);
+        return portmap.get(temp);
     }
 
     private void endTransmission() throws UnknownHostException {
