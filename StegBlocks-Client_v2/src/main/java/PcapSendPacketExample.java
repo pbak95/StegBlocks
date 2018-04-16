@@ -18,14 +18,30 @@ import org.jnetpcap.packet.PcapPacketHandler;
 import org.jnetpcap.packet.format.FormatUtils;
 import org.jnetpcap.protocol.JProtocol;
 import org.jnetpcap.protocol.lan.Ethernet;
+import org.jnetpcap.protocol.network.Arp;
 import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
+
+
 public class PcapSendPacketExample {
+
+    private static final String hardwareType = "0001";// 2 bytes
+    private static final String protocolType = "0800";// IPv4 protocol
+    private static final String hardwareAddressLength = "06";// xx-xx-xx-xx-xx-xx  48 bits => 6bytes
+    private static final String protocolAdressLength = "04";// yyy.yyy.yyy.yyy 32 bits => 4 bytes
+    private static final String operationCode = "0001";// Arp request 0001 ; Arp reply 0002
+    private static String HEX_DUMP = "0000:*ff ff ff ff  ff ff 08 00  27 83 13 a8  08 06*00 01    ........'.......\n" +
+            "0010: 08 00 06 04  00 01 08 00  27 83 13 a8  0a 00 02 0f    ........'.......\n" +
+            "0020: 00 00 00 00  00 00 0a 00  02 00*                      ..........      \n";
+
+
     public static void main(String[] args) throws UnknownHostException {
         List<PcapIf> alldevs = new ArrayList<PcapIf>(); // Will be filled with NICs
         StringBuilder errbuf = new StringBuilder(); // For any error msgs
         final List<PcapPacket> tcpPacket = new ArrayList<>();
+        final List<PcapPacket> pcapPackets = new ArrayList<>();
+
 
         /***************************************************************************
          * First get a list of devices on this system
@@ -107,6 +123,7 @@ public class PcapSendPacketExample {
 
                 Ip4 ip = new Ip4(); // Preallocat IP version 4 header
                 Tcp tcp = new Tcp();
+                Arp arp = new Arp();
 
                 if (packet.hasHeader(ip)) {
                     System.out.printf("ip.version=%d\n", ip.version());
@@ -116,6 +133,11 @@ public class PcapSendPacketExample {
                     System.out.printf("tcp.dstPort=%d\n", tcp.destination());
                     System.out.printf("tcp.srcPort=%d\n", tcp.source());
                     tcpPacket.add(packet);
+                }
+                if (packet.hasHeader(arp)) {
+                    System.out.println("ARP!!!!!!!!!!!!!");
+                    pcapPackets.add(packet);
+                    System.out.println(packet);
                 }
 
 
@@ -136,7 +158,7 @@ public class PcapSendPacketExample {
          * the loop method exists that allows the programmer to sepecify exactly
          * which protocol ID to use as the data link type for this pcap interface.
          **************************************************************************/
-        pcap.loop(10, jpacketHandler, "jNetPcap rocks!");
+        //pcap.loop(10, jpacketHandler, "jNetPcap rocks!");
 
 //        PcapPacket packetToSend = tcpPacket.get(0);
 //        System.out.println(packetToSend);
@@ -154,20 +176,46 @@ public class PcapSendPacketExample {
 //        System.out.println(packetToSend);
 
 
-        for (int i = 0; i < 100; i++) {
-            PcapPacket packetToSend = tcpPacket.get((int) (1 + (Math.random() * (tcpPacket.size() -1 ))));
-            System.out.println(packetToSend);
-            Ip4 ip = packetToSend.getHeader(new Ip4());
-            Tcp tcp = packetToSend.getHeader(new Tcp());
-            tcp.destination(40000);
-            ip.destination(Inet4Address.getByName("10.0.2.15").getAddress());
-            //ip.source(Inet4Address.getByName("127.0.0.1").getAddress());
-            ip.checksum(ip.calculateChecksum());
-            tcp.checksum(tcp.calculateChecksum());
-            if (pcap.sendPacket(packetToSend) != Pcap.OK) {
+//        for (int i = 0; i < 100; i++) {
+//            PcapPacket packetToSend = tcpPacket.get((int) (1 + (Math.random() * (tcpPacket.size() -1 ))));
+//            System.out.println(packetToSend);
+//            Ip4 ip = packetToSend.getHeader(new Ip4());
+//            Tcp tcp = packetToSend.getHeader(new Tcp());
+//            tcp.destination(40000);
+//            ip.destination(Inet4Address.getByName("10.0.2.15").getAddress());
+//            //ip.source(Inet4Address.getByName("127.0.0.1").getAddress());
+//            ip.checksum(ip.calculateChecksum());
+//            tcp.checksum(tcp.calculateChecksum());
+//            if (pcap.sendPacket(packetToSend) != Pcap.OK) {
+//                System.err.println(pcap.getErr());
+//            }
+//        }
+
+        // 192.168.1.2 in hex is C0A80102
+        // broadcast address is FFFFFFFFFFFF
+        // 192.168.1.2 in hex is C0A80101
+        //Assume that we will send an arp request to 192.168.1.1
+        //0x0a00020f
+        //DNS 0A000201
+        //Broadcast 0a0002ff
+        for (int i = 1; i < 255; i++) {
+            StringBuilder ipAddr = new StringBuilder().append("10.0.2." + i);
+            JPacket arpPacket = PcapSendPacketExample.createArp("0800278313a8", "0A00020F",
+                    "000000000000", convertIPToHex(ipAddr.toString()));
+            System.out.println(arpPacket);
+
+            if (pcap.sendPacket(arpPacket) != Pcap.OK) {
                 System.err.println(pcap.getErr());
             }
         }
+//        JPacket arpPacket = PcapSendPacketExample.createArp("0800278313a8", "0A00020F", "000000000000", "0A00020F");
+//        System.out.println(arpPacket);
+//
+//        if (pcap.sendPacket(arpPacket) != Pcap.OK) {
+//            System.err.println(pcap.getErr());
+//        }
+
+
 
 
         /********************************************************
@@ -175,4 +223,26 @@ public class PcapSendPacketExample {
          ********************************************************/
         pcap.close();
     }
+
+    public static JPacket createArp(String MAC_SOURCE, String IP_SOURCE, String MAC_DESTINATION, String IP_DESTINATION) {
+        String ARPPacket = hardwareType + protocolType + hardwareAddressLength + protocolAdressLength + operationCode
+                + MAC_SOURCE + IP_SOURCE + MAC_DESTINATION + IP_DESTINATION;
+        JPacket arpRequest = new JMemoryPacket(JProtocol.ARP_ID, ARPPacket);
+        return arpRequest;
+    }
+
+    public static String convertIPToHex(String ip) {
+        String[] octets = ip.split("\\.");
+        StringBuilder ipInHex = new StringBuilder();
+        for (int i=0; i<4; i++) {
+            StringBuilder internalSB = new StringBuilder();
+            internalSB.append(Integer.toHexString(Integer.parseInt(octets[i])));
+            if (internalSB.length() < 2) {
+                internalSB.insert(0, '0'); // pad with leading zero if needed
+            }
+            ipInHex.append(internalSB.toString().toUpperCase());
+        }
+        return ipInHex.toString();
+    }
+
 }  
