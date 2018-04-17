@@ -16,6 +16,9 @@ public class Main {
     private static int counter = 0;
     private static int max = 0;
     private static boolean progress = false;
+    private static int startPort = 1022;
+    private static int endPort = 1500;
+    private static int finishPort = 68;
 
     public static void main(String[] args) throws IOException {
 
@@ -29,39 +32,33 @@ public class Main {
                 if (packet.hasProtocol(Protocol.TCP)) {
 
                     TCPPacket tcpPacket = (TCPPacket) packet.getPacket(Protocol.TCP);
-                    if(tcpPacket.isPSH()) {
-                        Buffer buffer = tcpPacket.getPayload();
-                        int port = tcpPacket.getDestinationPort();
-                        if (buffer != null) {
-                            if(port == streams.get(0) && !progress) {
-                                //znacznik pierwszy
-                                progress = true;
+                    Buffer buffer = tcpPacket.getPayload();
+                    int port = tcpPacket.getDestinationPort();
+                    if (buffer != null) {
+                        if (port == startPort && !progress) {
+                            //znacznik pierwszy
+                            progress = true;
+                        } else if (port == endPort && progress) {
+                            //znacznik końcowy
+                            progress = false;
+                            if (counter > max) {
+                                max = counter;
                             }
-                            else if(port == streams.get(streams.size()-1) && progress) {
-                                //znacznik końcowy
-                                progress = false;
-                                if(counter > max) {
-                                    max = counter;
-                                }
-                                counter = 0;
-                            }
-                            else {
-                                counter++;
-                            }
+                            counter = 0;
+                        } else if(port == finishPort && !progress) {
+                            return true;
                         }
-                    }
-                    else if(tcpPacket.isSYN() && !tcpPacket.isACK()) {
-                        //System.out.println(tcpPacket.getSourcePort());
-                        streams.add(tcpPacket.getSourcePort());
+                        else {
+                            counter++;
+                        }
                     }
                 }
                 return true;
             }
         });
-        if(max > 10) {
+        if (max > 10) {
             System.out.println("Zawiera ukryte dane");
-        }
-        else {
+        } else {
             System.out.println("Nie zawiera ukrytych danych");
         }
     }
