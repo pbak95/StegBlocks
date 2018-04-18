@@ -18,7 +18,7 @@ import java.util.*;
 
 public class Server_TCP_v2 implements Runnable {
 
-    private static String PATH = "/home/michal/Desktop/BEST/StegBlocks/test-new.txt";
+    private static String PATH = "/home/osboxes/Studia/BEST/projekt/StegBlocks/antygona-new.txt";
     private static final int PORTS_NUMBER = 10;
     private static final int START_PORT = 122;    //could be changed later to spread ports across free space
     private static final int END_PORT = 150;    //could be changed later to spread ports across free space

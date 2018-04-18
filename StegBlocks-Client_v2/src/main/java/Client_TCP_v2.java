@@ -16,14 +16,15 @@ import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Client_TCP_v2 implements Runnable {
 
-    private static final String FILE_BEFORE = "/home/osboxes/Studia/BEST/projekt/StegBlocks/test.txt";
-    private static final String FILE_AFTER = "/home/osboxes/Studia/BEST/projekt/StegBlocks/test-encoded.txt";
+    private static final String FILE_BEFORE = "/home/osboxes/Studia/BEST/projekt/StegBlocks/antygona.txt";
+    private static final String FILE_AFTER = "/home/osboxes/Studia/BEST/projekt/StegBlocks/antygona-encoded.txt";
     private static final int START_PORT = 122;    //could be changed later to spread ports across free space
     private static final int END_PORT = 150;    //could be changed later to spread ports across free space
     private static final int CONNECTIONS_NUMBER = 10; //number of ports used to transmit characters
@@ -44,7 +45,8 @@ public class Client_TCP_v2 implements Runnable {
     private PcapPacketHandler<String> jpacketHandler; //packet handler
     private List<PcapPacket> tcpPacketPool;
     private List<String> hostsInNetwork;
-    ScheduledExecutorService executor; //executor for scanning task
+    private ScheduledExecutorService executor; //executor for scanning task
+    private ExecutorService snifferExecutor;
 
 
 
@@ -77,12 +79,15 @@ public class Client_TCP_v2 implements Runnable {
             initializeFile();
             initializeSniffer();
             initializeHandler();
+            runSniffer();
             if (transmission) {
                 sendFile();
             } else {
                 sendSomeTraffic();
             }
-            executor.shutdown();
+            if (executor != null)
+                executor.shutdown();
+            snifferExecutor.shutdown();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -101,6 +106,14 @@ public class Client_TCP_v2 implements Runnable {
         portmap.add(75);
         portmap.add(77);
         portmap.add(55);
+    }
+
+    private void runSniffer() {
+        snifferExecutor = Executors.newSingleThreadExecutor();
+        Runnable sniffer = () -> {
+            pcap.loop(-1, jpacketHandler, "jNetPcap rocks!");
+        };
+        snifferExecutor.execute(sniffer);
     }
 
     private void sendFile() throws UnknownHostException {
@@ -127,17 +140,18 @@ public class Client_TCP_v2 implements Runnable {
     }
 
     void sniffPackets(int number) {
-        logMessage("Start sniffing " + number + " packets");
-        pcap.loop(number, jpacketHandler, "jNetPcap rocks!"); //character number + 2(start and end sequence)
+        //logMessage("Start sniffing " + number + " packets");
+        //pcap.loop(-1, jpacketHandler, "jNetPcap rocks!"); //character number + 2(start and end sequence)
         while (true) {
             if (tcpPacketPool.size() < number) {
                 try {
-                    Thread.sleep(5);
+                    Thread.sleep(1);
+                    //System.out.println("Size: " + tcpPacketPool.size());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             } else {
-                logMessage("Sniffing finished");
+               // logMessage("Sniffing finished");
                 break;
             }
         }
@@ -166,7 +180,7 @@ public class Client_TCP_v2 implements Runnable {
         if (pcap.sendPacket(packetToOverwrite) != Pcap.OK) {
             System.err.println(pcap.getErr() + " Packet size: " + packetToOverwrite.size());
         }
-        System.out.println("Packet send size: " + packetToOverwrite.size());
+        //System.out.println("Packet send size: " + packetToOverwrite.size());
     }
 
     private void sendSomeTraffic() {
@@ -175,14 +189,26 @@ public class Client_TCP_v2 implements Runnable {
         timer.schedule( new TimerTask()
         {
             public void run() {
-                pcap.loop(50, jpacketHandler, "jNetPcap rocks!");
-                tcpPacketPool.forEach((packetToOverwrite) -> {
-                    try {
-                        sendPacket(packetToOverwrite, getPseudorandomPort());
-                    } catch (UnknownHostException e) {
-                        e.printStackTrace();
+                //pcap.loop(50, jpacketHandler, "jNetPcap rocks!");
+                while (true) {
+                    if (tcpPacketPool.size() == 0) {
+                        try {
+                            Thread.sleep(1);
+                            //System.out.println("Size: " + tcpPacketPool.size());
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        break;
                     }
-                });
+                }
+
+                try {
+                    sendPacket(getTcpPacket(randomNumberInRange(0, tcpPacketPool.size() -1)), getPseudorandomPort());
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+                tcpPacketPool.clear();
             }
         }, 0, 500);
     }
@@ -200,8 +226,10 @@ public class Client_TCP_v2 implements Runnable {
                     Save tcp packets
                  */
                 if (packet.hasHeader(tcp)) {
-                    if (tcp.size() < 1800)
-                    tcpPacketPool.add(packet);
+                    //System.out.println("Capture TCP packet: " + packet.size());
+                    if (packet.size() < 1000){
+                        tcpPacketPool.add(packet);
+                    }
                 }
             }
         };
@@ -312,6 +340,12 @@ public class Client_TCP_v2 implements Runnable {
     private byte[] getHostFromNetwork() throws UnknownHostException {
         synchronized (hostsInNetwork) {
             return Inet4Address.getByName(hostsInNetwork.get(randomNumberInRange(0, hostsInNetwork.size() - 1))).getAddress();
+        }
+    }
+
+    private PcapPacket getTcpPacket(int index) {
+        synchronized (tcpPacketPool) {
+            return tcpPacketPool.get(index);
         }
     }
 
