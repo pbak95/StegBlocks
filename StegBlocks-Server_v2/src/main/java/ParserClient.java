@@ -69,7 +69,7 @@ public class ParserClient {
     }
 
     private static void saveToFile(String message) throws IOException {
-        PrintWriter out = new PrintWriter("/home/michal/Desktop/BEST/StegBlocks/antygona-decoded.txt");
+        PrintWriter out = new PrintWriter("/home/osboxes/Studia/BEST/projekt/StegBlocks/antygona-decoded.txt");
         out.println(message);
         out.close();
     }
