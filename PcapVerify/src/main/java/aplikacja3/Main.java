@@ -13,16 +13,17 @@ import java.util.ArrayList;
 public class Main {
 
     private static ArrayList<Integer> streams;
-    private static int counter = 0;
+    private static int counter1 = 0;
+    private static int counter2 = 0;
     private static int max = 0;
     private static boolean progress = false;
-    private static int startPort = 1022;
-    private static int endPort = 1500;
+    private static int startPort = 122;
+    private static int endPort = 150;
     private static int finishPort = 68;
 
     public static void main(String[] args) throws IOException {
 
-        final Pcap pcap = Pcap.openStream("..\\withencoding.pcap");
+        final Pcap pcap = Pcap.openStream(args[0]);
         streams = new ArrayList();
 
         pcap.loop(new PacketHandler() {
@@ -32,31 +33,17 @@ public class Main {
                 if (packet.hasProtocol(Protocol.TCP)) {
 
                     TCPPacket tcpPacket = (TCPPacket) packet.getPacket(Protocol.TCP);
-                    Buffer buffer = tcpPacket.getPayload();
                     int port = tcpPacket.getDestinationPort();
-                    if (buffer != null) {
-                        if (port == startPort && !progress) {
-                            //znacznik pierwszy
-                            progress = true;
-                        } else if (port == endPort && progress) {
-                            //znacznik końcowy
-                            progress = false;
-                            if (counter > max) {
-                                max = counter;
-                            }
-                            counter = 0;
-                        } else if(port == finishPort && !progress) {
-                            return true;
-                        }
-                        else {
-                            counter++;
-                        }
+                    if (port == startPort) {
+                        counter1++;
+                    } else if (port == endPort) {
+                        counter2++;
                     }
                 }
                 return true;
             }
         });
-        if (max > 10) {
+        if (counter1 > 10 && counter2 > 10) {
             System.out.println("It contains secret message.");
         } else {
             System.out.println("It does not contain secret message.");
