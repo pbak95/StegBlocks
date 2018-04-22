@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParserServer {
+public class ParserClient {
 	//on client side map the same, but withour polish signes on end
 	static Map<Integer, Integer> codingMap = new HashMap<Integer, Integer>();
     static String sentence="";
@@ -51,7 +51,7 @@ public class ParserServer {
     	codingMap.put(378,5);//ż
 	}
 
-    public ParserServer(String fileBefore, String fileAfter) throws IOException {
+    public ParserClient(String fileBefore, String fileAfter) throws IOException {
     	setup();
         FileInputStream fis = new FileInputStream(fileBefore);
         InputStreamReader fr = new InputStreamReader(fis, "Cp1250");
