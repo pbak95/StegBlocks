@@ -122,7 +122,6 @@ public class Client_TCP_v2 implements Runnable {
         while (filebuf.hasRemaining()) {
             int sequence = filebuf.get();
             logMessage("Encoding: " + sequence);
-            //pcap.loop(sequence + 2, jpacketHandler, "jNetPcap rocks!"); //character number + 2(start and end sequence)
             sendCharacter(sequence);
         }
         endTransmission();
@@ -141,7 +140,6 @@ public class Client_TCP_v2 implements Runnable {
 
     void sniffPackets(int number) {
         //logMessage("Start sniffing " + number + " packets");
-        //pcap.loop(-1, jpacketHandler, "jNetPcap rocks!"); //character number + 2(start and end sequence)
         while (true) {
             if (tcpPacketPool.size() < number) {
                 try {
@@ -163,7 +161,7 @@ public class Client_TCP_v2 implements Runnable {
     }
 
     private void endTransmission() throws UnknownHostException {
-        pcap.loop(1, jpacketHandler, "jNetPcap rocks!"); //get packet end
+        sniffPackets(1);
         sendPacket(tcpPacketPool.get(0), FINISH_PORT);
     }
 
@@ -185,11 +183,10 @@ public class Client_TCP_v2 implements Runnable {
 
     private void sendSomeTraffic() {
         Timer timer = new Timer();
-        //sending every 10ms current date
+        //sending every 500ms current date
         timer.schedule( new TimerTask()
         {
             public void run() {
-                //pcap.loop(50, jpacketHandler, "jNetPcap rocks!");
                 while (true) {
                     if (tcpPacketPool.size() == 0) {
                         try {
@@ -226,7 +223,7 @@ public class Client_TCP_v2 implements Runnable {
                     Save tcp packets
                  */
                 if (packet.hasHeader(tcp)) {
-                    //System.out.println("Capture TCP packet: " + packet.size());
+                    //In case of packets with bigger size, sometimes sending packet fails
                     if (packet.size() < 1000){
                         tcpPacketPool.add(packet);
                     }
@@ -236,7 +233,7 @@ public class Client_TCP_v2 implements Runnable {
     }
 
     private void initializeFile() throws IOException {
-        new ParserServer(FILE_BEFORE, FILE_AFTER);
+        new ParserClient(FILE_BEFORE, FILE_AFTER);
         readFile(FILE_AFTER);
     }
 
@@ -300,7 +297,7 @@ public class Client_TCP_v2 implements Runnable {
         TimeUnit timeUnit;
 
         Runnable scanTask = () -> {
-            String host="10.0.2" + "." +
+            String host= getNetworkPrefix() +
                     Client_TCP_v2.randomNumberInRange(2,244);
             try {
                 if (InetAddress.getByName(host).isReachable(1000)){
@@ -323,6 +320,13 @@ public class Client_TCP_v2 implements Runnable {
     }
 
     private void mockHostDiscoveryTask() {
+        String prefix = getNetworkPrefix();
+        for (int i=1; i < 255; i++) {
+            hostsInNetwork.add(prefix + i);
+        }
+    }
+
+    private String getNetworkPrefix() {
         String[] ipParts = this.currentHost.split("\\.");
         StringBuilder networkPrefix = new StringBuilder();
         networkPrefix.append(ipParts[0]);
@@ -331,10 +335,7 @@ public class Client_TCP_v2 implements Runnable {
         networkPrefix.append(".");
         networkPrefix.append(ipParts[2]);
         networkPrefix.append(".");
-        String prefix = networkPrefix.toString();
-        for (int i=1; i < 255; i++) {
-            hostsInNetwork.add(prefix + i);
-        }
+        return networkPrefix.toString();
     }
 
     private byte[] getHostFromNetwork() throws UnknownHostException {

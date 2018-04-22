@@ -3,8 +3,6 @@ import org.jnetpcap.PcapBpfProgram;
 import org.jnetpcap.PcapIf;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
-import org.jnetpcap.packet.format.FormatUtils;
-import org.jnetpcap.protocol.network.Ip4;
 import org.jnetpcap.protocol.tcpip.Tcp;
 
 import java.io.File;
@@ -38,8 +36,6 @@ public class Server_TCP_v2 implements Runnable {
 
     private File file;
     private FileOutputStream fileOutputStream;
-
-    //private boolean transmission = true;
 
 
     public Server_TCP_v2() {
@@ -75,9 +71,6 @@ public class Server_TCP_v2 implements Runnable {
     }
 
     private void initalizePorts() throws IOException {
-//        for (int i = 0; i < PORTS_NUMBER; i++) {
-//            connectionsPool.put(i, new ServerSocket(START_PORT + i));
-//        }
         portmap = new ArrayList<>();
         portmap.add(54);
         portmap.add(60);
@@ -178,14 +171,9 @@ public class Server_TCP_v2 implements Runnable {
                         CHARACTER_COUNTER++;
                     } else if (tcp.destination() == FINISH_PORT) {
                         try {
-                            //Thread.sleep(2000); //wait some time and receive
                             finishTransmission();
-                            main.java.ParserClient parserServer = new main.java.ParserClient(PATH);
-                        }
-//                        catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-                        catch (IOException e) {
+                            main.java.ParserServer parserServer = new main.java.ParserServer(PATH);
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }

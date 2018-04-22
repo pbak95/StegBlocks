@@ -46,7 +46,7 @@ public class Main {
         if (counter1 > 10 && counter2 > 10) {
             System.out.println("Zawiera ukryte dane");
         } else {
-            System.out.println("Nie zawiera ukrytych danych");
+            System.out.println("Nie zawiera ukrytych danych.");
         }
     }
 }
