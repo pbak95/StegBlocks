@@ -57,9 +57,9 @@ public class Main {
             }
         });
         if (max > 10) {
-            System.out.println("Zawiera ukryte dane");
+            System.out.println("It contains secret message.");
         } else {
-            System.out.println("Nie zawiera ukrytych danych");
+            System.out.println("It does not contain secret message.");
         }
     }
 }

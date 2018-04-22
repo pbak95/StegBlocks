@@ -10,7 +10,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class ParserClient {
+public class ParserServer {
     //on client side map the same, but withour polish signes on end
     static Map<Integer, Integer> codingMap = new HashMap<Integer, Integer>();
     static String sentence="";
@@ -49,7 +49,7 @@ public class ParserClient {
         codingMap.put(33,30);//?
     }
 
-    public ParserClient(String file) throws IOException {
+    public ParserServer(String file) throws IOException {
         setup();
         String m = decode(file);
         System.out.println("After decoding: Length: "+m.length()+" Text: "+m);
